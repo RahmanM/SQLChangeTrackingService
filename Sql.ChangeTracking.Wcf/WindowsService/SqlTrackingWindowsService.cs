@@ -57,8 +57,6 @@ namespace ServiceTopShelf
             var container = ConfigureDependency.Configure();
             SimpleInjectorServiceHostFactory.SetContainer(container);
 
-            // Wcf Service Instance
-            var wcfService = container.GetInstance<IChangeTrackingSubscriptions>();
 
             Logger.Information("Configuring dependencies");
             var changeTrackingManager = container.GetInstance<ISqlTrackingManager>();
@@ -69,6 +67,9 @@ namespace ServiceTopShelf
             Tasks.Add(changeTrackingManager.ProcessChangedTables(cancellationTokenSource.Token));
 
             // Initialise wcf service host
+            // Wcf Service Instance
+            var wcfService = container.GetInstance<IChangeTrackingSubscriptions>();
+            wcfService.Logger = this.Logger;
             HostWcfService(wcfService);
 
             Logger.Information("OnStart [E]" + DateTime.Now);

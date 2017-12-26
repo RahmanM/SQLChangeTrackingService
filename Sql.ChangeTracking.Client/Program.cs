@@ -82,7 +82,7 @@ namespace Sql.ChangeTracking.Client
 
         public void PublishTableChange(string tableName)
         {
-            Console.WriteLine("Got callback");
+            Console.WriteLine($"Table {tableName} was changed.");
         }
     }
 }

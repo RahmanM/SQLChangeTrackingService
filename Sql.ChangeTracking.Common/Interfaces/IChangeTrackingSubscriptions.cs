@@ -1,4 +1,5 @@
-﻿using System.ServiceModel;
+﻿using Serilog;
+using System.ServiceModel;
 
 namespace Sql.ChangeTracking.Common
 {
@@ -14,5 +15,7 @@ namespace Sql.ChangeTracking.Common
 
         [OperationContract(IsOneWay = true)] 
         void TableChanged(string tableName);
+
+        ILogger Logger { get; set; }
     }
 }

@@ -1,12 +1,9 @@
-﻿using ServiceTopShelf;
+﻿using Serilog;
 using Sql.ChangeTracking.Common;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.ServiceModel;
-using System.Text;
 
 namespace Sql.ChangeTracking.Wcf
 {
@@ -15,7 +12,7 @@ namespace Sql.ChangeTracking.Wcf
         private object locker = new object();
         private Dictionary<Subscriber, IEventNotificationCallback> Subscribers = new Dictionary<Subscriber, IEventNotificationCallback>();
 
-        public ISqlTrackingManager SqlTrackingManager { get; }
+        public ILogger Logger { get; set; }
 
         public void Subscribe(string id, string tableName)
         {
@@ -30,35 +27,44 @@ namespace Sql.ChangeTracking.Wcf
                     Subscribers.Add(subscriber, callback);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // TODO Rahman: fill the stub
+                Logger.Error(ex, ex.Message);
+                throw;
             }
         }
 
         public void TableChanged(string tableName)
         {
             // get all the subscribers
-            var subscriberKeys = (from c in Subscribers
-                                  select c.Key).ToList();
-
-            foreach (var item in subscriberKeys)
+            try
             {
-                IEventNotificationCallback callback = Subscribers[item];
-                if (((ICommunicationObject)callback).State == CommunicationState.Opened)
+                var subscriberKeys = (from c in Subscribers
+                                      select c.Key).ToList();
+
+                foreach (var item in subscriberKeys)
                 {
-                    //call back only those subscribers who are interested in this fileType
-                    if (string.Equals(item.TableInterested, tableName, StringComparison.OrdinalIgnoreCase))
+                    IEventNotificationCallback callback = Subscribers[item];
+                    if (((ICommunicationObject)callback).State == CommunicationState.Opened)
                     {
-                        callback.PublishTableChange(tableName);
+                        //call back only those subscribers who are interested in this fileType
+                        if (string.Equals(item.TableInterested, tableName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            callback.PublishTableChange(tableName);
+                        }
+                    }
+                    else
+                    {
+                        //These subscribers are no longer active. Delete them from subscriber list
+                        subscriberKeys.Remove(item);
+                        Subscribers.Remove(item);
                     }
                 }
-                else
-                {
-                    //These subscribers are no longer active. Delete them from subscriber list
-                    subscriberKeys.Remove(item);
-                    Subscribers.Remove(item);
-                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, ex.Message);
+                throw;
             }
 
         }
@@ -79,9 +85,10 @@ namespace Sql.ChangeTracking.Wcf
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // TODO Rahman: fill the stub
+                Logger.Error(ex, ex.Message);
+                throw;
             }
         }
     }
