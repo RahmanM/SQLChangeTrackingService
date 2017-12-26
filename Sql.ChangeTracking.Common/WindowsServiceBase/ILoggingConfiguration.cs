@@ -1,8 +1,11 @@
-﻿namespace ServiceTopShelf
+﻿using Serilog;
+
+namespace ServiceTopShelf
 {
     public interface ILoggingConfiguration
     {
-        string LogFile { get; set; }
-        string LogFolder { get; set; }
+        LogginInfo LoggingInfo { get; set; }
+
+        ILogger ConfigureLogger();
     }
 }

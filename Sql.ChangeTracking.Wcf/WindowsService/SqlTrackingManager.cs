@@ -1,6 +1,7 @@
 ﻿using Nerdle.AutoConfig;
 using Polly;
 using Serilog;
+using Sql.ChangeTracking.Common;
 using System;
 using System.IO;
 using System.Threading;
@@ -14,42 +15,51 @@ namespace ServiceTopShelf
     /// </summary>
     public class SqlTrackingManager : ISqlTrackingManager
     {
-        public Serilog.ILogger ServiceLogger { get; set; }
+        public Serilog.ILogger logger { get; set; }
         public IDatabaseHelper DatabaseHelper { get; }
+        public IChangeTrackingSubscriptions WcfService { get; }
 
-        public SqlTrackingManager(IDatabaseHelper databaseHelper)
+        public SqlTrackingManager(IDatabaseHelper databaseHelper, IChangeTrackingSubscriptions wcfService)
         {
             DatabaseHelper = databaseHelper;
+            WcfService = wcfService;
         }
 
-        public Task ProcessInvoices(CancellationToken cancellationToken)
+        public Task ProcessChangedTables(CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
                 Policy.Handle<Exception>()
                     .WaitAndRetryForeverAsync(i => TimeSpan.FromSeconds(2), (ex, span) =>
                     {
-                        ServiceLogger.Information("Error when polling for sql changes!" + ex.Message);
+                        logger.Information("Error when polling for sql changes!" + ex.Message);
                     })
 
                     .ExecuteAsync(async ct =>
                     {
-                        ServiceLogger.Information("Starting to poll for new sql changes.");
-                        await PollOnInvoices(cancellationToken);
+                        logger.Information("Starting to poll for new sql changes.");
+                        await PollOnChangedTrackingTables(cancellationToken);
                     }, cancellationToken);
             }, cancellationToken);
         }
 
-        private async Task PollOnInvoices(CancellationToken cancellationToken)
+        private async Task PollOnChangedTrackingTables(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
 
-                ServiceLogger.Information("Polling ...");
-                // This logs the whole structured object
-                ServiceLogger.Information("{@Invoice}", DatabaseHelper.GetData());
+                logger.Information("Polling ...");
 
-                await Task.Delay(2000);
+                var versionChanges = DatabaseHelper.GetData();
+
+                foreach (var change in versionChanges)
+                {
+                    logger.Information("{@change}", change);
+                    WcfService.TableChanged(change.Name);
+                }
+
+
+                await Task.Delay(400);
             }
         }
     }

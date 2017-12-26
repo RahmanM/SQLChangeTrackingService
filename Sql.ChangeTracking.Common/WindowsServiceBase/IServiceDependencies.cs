@@ -1,7 +1,9 @@
-﻿namespace ServiceTopShelf
+﻿using Serilog;
+
+namespace ServiceTopShelf
 {
     public interface IServiceDependencies
     {
-        LoggingConfiguration LoggingConfiguration { get; set; }
+        ILogger Logger { get; set; }
     }
 }

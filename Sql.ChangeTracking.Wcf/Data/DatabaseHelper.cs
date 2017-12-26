@@ -1,12 +1,17 @@
-﻿using System;
+﻿using Sql.ChangeTracking.Data;
+using System;
+using System.Collections.Generic;
 
 namespace ServiceTopShelf.DI
 {
     internal class DatabaseHelper : IDatabaseHelper
     {
-        public object GetData()
+        public List<UspTableVersionChangeTrackingReturnModel> GetData()
         {
-            return new object();
+            using (var context = new SQLChangeTrackingTest("SQLChangeTrackingTest"))
+            {
+                return context.UspTableVersionChangeTracking(null);
+            }
         }
     }
 }

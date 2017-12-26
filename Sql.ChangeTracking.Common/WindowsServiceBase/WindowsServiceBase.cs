@@ -1,4 +1,5 @@
-﻿using Serilog.Core;
+﻿using Serilog;
+using Serilog.Core;
 
 namespace ServiceTopShelf
 {
@@ -9,9 +10,9 @@ namespace ServiceTopShelf
     public abstract class WindowsServiceBase
     {
 
-        public Logger BaseLogger { get; set; }
+        public ILogger BaseLogger { get; set; }
 
-        public void Start(Logger logger)
+        public void Start(ILogger logger)
         {
             logger?.Information("Service base Start [Start]");
             BaseLogger = logger;

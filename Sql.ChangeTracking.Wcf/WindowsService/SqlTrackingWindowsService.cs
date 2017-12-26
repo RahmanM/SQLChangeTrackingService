@@ -1,35 +1,50 @@
-﻿using ServiceTopShelf.DI;
+﻿using Serilog;
+using ServiceTopShelf.DI;
+using SimpleInjector.Integration.Wcf;
 using System;
 using System.Collections.Generic;
 using System.ServiceModel;
 using System.ServiceModel.Description;
 using System.Threading;
 using System.Threading.Tasks;
+using SimpleInjector;
+using Sql.ChangeTracking.Common;
 
 namespace ServiceTopShelf
 {
     public class SqlTrackingWindowsService : WindowsServiceBase
     {
+        public SqlTrackingWindowsService(ILogger logger)
+        {
+            Logger = logger;
+        }
+
         private CancellationTokenSource cancellationTokenSource;
         private List<Task> Tasks { get; set; }
+        public ILogger Logger { get; }
 
         public override bool OnContinue()
         {
-            BaseLogger.Information("OnContinue");
+            Logger.Information("OnContinue");
             return true;
         }
 
         public override bool OnPause()
         {
-            BaseLogger.Information("OnPause");
+            Logger.Information("OnPause");
             return true;
         }
 
         public override void OnShutdown()
         {
-            BaseLogger.Information("OnShutdown [S]");
+            Logger.Information("OnShutdown [S]");
             cancellationTokenSource.Cancel();
-            BaseLogger.Information("OnShutdown [E]");
+            if (_ServiceHost != null)
+            {
+                _ServiceHost.Close();
+                _ServiceHost = null;
+            }
+            Logger.Information("OnShutdown [E]");
         }
 
         public override void OnStart()
@@ -37,44 +52,43 @@ namespace ServiceTopShelf
             // Will be called the first time windows service is started!
             Tasks = new List<Task>();
 
-            HostWcfService();
+            // Configure the DI and dependencies and intitialize the Manager
+            Logger.Information("OnStart [S]" + DateTime.Now);
+            var container = ConfigureDependency.Configure();
+            SimpleInjectorServiceHostFactory.SetContainer(container);
 
+            // Wcf Service Instance
+            var wcfService = container.GetInstance<IChangeTrackingSubscriptions>();
 
-            //// Configure the DI and dependencies and intitialize the Manager
-            //BaseLogger.Information("OnStart [S]" + DateTime.Now);
-            //var container = ConfigureDependency.Configure();
+            Logger.Information("Configuring dependencies");
+            var changeTrackingManager = container.GetInstance<ISqlTrackingManager>();
+            changeTrackingManager.logger = this.Logger;
 
-            //BaseLogger.Information("Configuring dependencies");
-            //var invoiceManager = container.GetInstance<ISqlTrackingManager>();
-            //invoiceManager.ServiceLogger = this.BaseLogger;
+            Logger.Information("Initialsing the change tracking manager!");
+            cancellationTokenSource = new CancellationTokenSource();
+            Tasks.Add(changeTrackingManager.ProcessChangedTables(cancellationTokenSource.Token));
 
-            //BaseLogger.Information("Initialsing the invoice manager!");
-            //cancellationTokenSource = new CancellationTokenSource();
-            //Tasks.Add(invoiceManager.ProcessInvoices(cancellationTokenSource.Token));
+            // Initialise wcf service host
+            HostWcfService(wcfService);
 
-            BaseLogger.Information("OnStart [E]" + DateTime.Now);
+            Logger.Information("OnStart [E]" + DateTime.Now);
         }
 
-        private ServiceHost _ServiceHost = null;
-
-        private void HostWcfService()
+        private void HostWcfService(IChangeTrackingSubscriptions service)
         {
             if (_ServiceHost != null) _ServiceHost.Close();
 
-            //string httpBaseAddress = "http://localhost:9001/Sql.ChangeTracking.Wcf/Wcf";
             string tcpBaseAddress = "net.tcp://localhost:9002/Sql.ChangeTracking.Wcf/Wcf";
 
-            Uri[] adrbase = {  new Uri(tcpBaseAddress)};
-            _ServiceHost = new ServiceHost(typeof(Sql.ChangeTracking.Wcf.SqlChangeTrackingWcfService), adrbase);
+            Uri[] adrbase = { new Uri(tcpBaseAddress) };
+
+            // initialize the WCF service using DI and inject it into hose
+            _ServiceHost = new ServiceHost(service, adrbase);
+            ((ServiceBehaviorAttribute)_ServiceHost.Description.Behaviors[typeof(ServiceBehaviorAttribute)]).InstanceContextMode = InstanceContextMode.Single;
 
             ServiceMetadataBehavior serviceBehaviour = new ServiceMetadataBehavior();
             if (!_ServiceHost.Description.Behaviors.Contains(serviceBehaviour))
                 _ServiceHost.Description.Behaviors.Add(serviceBehaviour);
-
-            //WSDualHttpBinding httpBinding = new WSDualHttpBinding();
-            //_ServiceHost.AddServiceEndpoint(typeof(Sql.ChangeTracking.Common.IChangeTrackingSubscriptions), httpBinding, httpBaseAddress);
-            //_ServiceHost.AddServiceEndpoint(typeof(IMetadataExchange),
-            //MetadataExchangeBindings.CreateMexHttpBinding(), "mex");
 
             NetTcpBinding tcpBinding = new NetTcpBinding();
             _ServiceHost.AddServiceEndpoint(typeof(Sql.ChangeTracking.Common.IChangeTrackingSubscriptions), tcpBinding, tcpBaseAddress);
@@ -85,17 +99,34 @@ namespace ServiceTopShelf
 
         }
 
+        private ServiceHost _ServiceHost = null;
+
         public override void OnStop()
         {
-            BaseLogger.Information("OnStop [S]");
+            Logger.Information("OnStop [S]");
             cancellationTokenSource.Cancel();
-            BaseLogger.Information("OnStop [E]");
 
             if (_ServiceHost != null)
             {
                 _ServiceHost.Close();
                 _ServiceHost = null;
             }
+
+            Logger.Information("OnStop [E]");
+
         }
+    }
+
+    public class WcfServiceFactory : SimpleInjectorServiceHostFactory
+    {
+        protected override ServiceHost CreateServiceHost(Type serviceType, Uri[] baseAddresses)
+        {
+            return new SimpleInjectorServiceHost(
+                ConfigureDependency.container,
+                typeof(Sql.ChangeTracking.Wcf.SqlChangeTrackingWcfService),
+                baseAddresses);
+        }
+
+       
     }
 }

@@ -6,7 +6,7 @@ namespace ServiceTopShelf
 {
     public interface ISqlTrackingManager
     {
-        Task ProcessInvoices(CancellationToken cancellationToken);
-        ILogger ServiceLogger { get; set; }
+        Task ProcessChangedTables(CancellationToken cancellationToken);
+        ILogger logger { get; set; }
     }
 }

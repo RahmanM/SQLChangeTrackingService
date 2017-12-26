@@ -1,8 +1,4 @@
 ﻿using Serilog;
-using Serilog.Core;
-using Serilog.Events;
-using System.IO;
-using System.Net;
 using Topshelf;
 
 namespace ServiceTopShelf
@@ -13,7 +9,7 @@ namespace ServiceTopShelf
         public WindowsServiceBase ServiceType { get; set; }
         public IServiceDependencies ServiceDependencies { get; }
 
-        public Logger Logger { get; set; }
+        private ILogger Logger { get; set; }
 
         public ServiceConfigurationHelper(WindowsServiceBase windowsService)
         {
@@ -31,7 +27,7 @@ namespace ServiceTopShelf
             ServiceType = windowsService;
             ServiceDependencies = serviceDependencies;
 
-            Logger = ConfigureLogger(serviceDependencies);
+            Logger = serviceDependencies.Logger;
             Logger.Information("Constructor initialised.");
         }
 
@@ -102,24 +98,5 @@ namespace ServiceTopShelf
 
         }
 
-        public virtual Logger ConfigureLogger(IServiceDependencies serviceDependencies)
-        {
-
-            var template = "{MachineName}:{EnvironmentUserName} {Timestamp:dd/MM/yyy HH:mm:ss:mm} [{Level}] ({ThreadId}) {Message}{NewLine}{Exception}";
-
-            return new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .Enrich.WithThreadId()
-                .Enrich.WithMachineName()
-                .Enrich.WithEnvironmentUserName()
-                 .WriteTo.Console(
-                    outputTemplate: template)
-                .WriteTo.File(
-                                Path.Combine(serviceDependencies.LoggingConfiguration?.LogFolder,  serviceDependencies.LoggingConfiguration?.LogFile),
-                                rollingInterval: RollingInterval.Day,
-                                outputTemplate: template
-                              )
-                .CreateLogger();
-        }
     }
 }

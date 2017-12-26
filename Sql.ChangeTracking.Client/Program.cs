@@ -33,8 +33,7 @@ namespace Sql.ChangeTracking.Client
                 IChangeTrackingSubscriptions channel = channelFactory.CreateChannel();
 
                 //Call the service method on this channel as below  
-                channel.Subscribe("Client1", "Customers");
-                channel.TableChanged("Customers");
+                channel.Subscribe("Client1", "Customer");
 
             }
             catch (TimeoutException ex)

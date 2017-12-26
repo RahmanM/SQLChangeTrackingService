@@ -1,7 +1,10 @@
-﻿namespace ServiceTopShelf
+﻿using Sql.ChangeTracking.Data;
+using System.Collections.Generic;
+
+namespace ServiceTopShelf
 {
     public interface IDatabaseHelper
     {
-        object GetData();
+        List<UspTableVersionChangeTrackingReturnModel> GetData();
     }
 }

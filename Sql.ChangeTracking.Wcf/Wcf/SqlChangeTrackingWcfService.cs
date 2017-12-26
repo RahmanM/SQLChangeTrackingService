@@ -1,4 +1,5 @@
-﻿using Sql.ChangeTracking.Common;
+﻿using ServiceTopShelf;
+using Sql.ChangeTracking.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,11 +10,12 @@ using System.Text;
 
 namespace Sql.ChangeTracking.Wcf
 {
-    // NOTE: You can use the "Rename" command on the "Refactor" menu to change the class name "SqlChangeTrackingWcfService" in both code and config file together.
     public class SqlChangeTrackingWcfService : IChangeTrackingSubscriptions
     {
         private object locker = new object();
         private Dictionary<Subscriber, IEventNotificationCallback> Subscribers = new Dictionary<Subscriber, IEventNotificationCallback>();
+
+        public ISqlTrackingManager SqlTrackingManager { get; }
 
         public void Subscribe(string id, string tableName)
         {
@@ -22,8 +24,6 @@ namespace Sql.ChangeTracking.Wcf
                 IEventNotificationCallback callback = OperationContext.Current.GetCallbackChannel<IEventNotificationCallback>();
                 lock (locker)
                 {
-                    Debug.WriteLine("Adding client");
-
                     Subscriber subscriber = new Subscriber();
                     subscriber.Id = id;
                     subscriber.TableInterested = tableName;
@@ -38,16 +38,12 @@ namespace Sql.ChangeTracking.Wcf
 
         public void TableChanged(string tableName)
         {
-            //get all the subscribers
+            // get all the subscribers
             var subscriberKeys = (from c in Subscribers
                                   select c.Key).ToList();
 
-            Debug.WriteLine("TableChanged" + subscriberKeys.Count);
-
             foreach (var item in subscriberKeys)
             {
-                Debug.WriteLine("TableChanged" + item.Id);
-
                 IEventNotificationCallback callback = Subscribers[item];
                 if (((ICommunicationObject)callback).State == CommunicationState.Opened)
                 {

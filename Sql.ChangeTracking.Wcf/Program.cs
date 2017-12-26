@@ -13,18 +13,15 @@ namespace ServiceTopShelf
             try
             {
                 // This cool util, serializes the app.config configuration section to a class or interface
-                var result = AutoConfig.Map<LoggingConfiguration>();
+                var result = AutoConfig.Map<LogginInfo>();
+                var logger = new LoggingConfiguration(result).ConfigureLogger();
 
                 // Initialise the service using the Topshelf and configure logging
                 // InvoiceWindowsService is the service that is inheriting from the base and doing cool stuff 
-                new ServiceConfigurationHelper(new SqlTrackingWindowsService(), 
+                new ServiceConfigurationHelper(new SqlTrackingWindowsService(logger), 
                     new ServiceDependencies
                     {
-                         LoggingConfiguration = new LoggingConfiguration()
-                         {
-                             LogFile = result.LogFile,
-                             LogFolder = result.LogFolder
-                         }
+                         Logger = logger
                     }
                     ).Configure();
             }

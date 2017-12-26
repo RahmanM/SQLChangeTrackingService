@@ -9,6 +9,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sql.ChangeTracking.Client",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sql.ChangeTracking.Common", "Sql.ChangeTracking.Common\Sql.ChangeTracking.Common.csproj", "{2BF72AD0-52D6-462F-8766-453D505E4FBC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sql", "Sql", "{48790E98-3597-45D4-9C7D-ACF3E278AE3E}"
+	ProjectSection(SolutionItems) = preProject
+		SampleDatabaseAndTables.sql = SampleDatabaseAndTables.sql
+		StoredProcedures.sql = StoredProcedures.sql
+		Tables.sql = Tables.sql
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sql.ChangeTracking.Data", "Sql.ChangeTracking.Data\Sql.ChangeTracking.Data.csproj", "{847B4499-BE06-4F13-9AA4-73DB2F6E3A19}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +36,10 @@ Global
 		{2BF72AD0-52D6-462F-8766-453D505E4FBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2BF72AD0-52D6-462F-8766-453D505E4FBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2BF72AD0-52D6-462F-8766-453D505E4FBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{847B4499-BE06-4F13-9AA4-73DB2F6E3A19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{847B4499-BE06-4F13-9AA4-73DB2F6E3A19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{847B4499-BE06-4F13-9AA4-73DB2F6E3A19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{847B4499-BE06-4F13-9AA4-73DB2F6E3A19}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
