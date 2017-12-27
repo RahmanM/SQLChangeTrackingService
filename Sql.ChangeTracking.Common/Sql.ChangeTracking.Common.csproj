@@ -74,5 +74,11 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Sql.ChangeTracking.Data\Sql.ChangeTracking.Data.csproj">
+      <Project>{847b4499-be06-4f13-9aa4-73db2f6e3a19}</Project>
+      <Name>Sql.ChangeTracking.Data</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

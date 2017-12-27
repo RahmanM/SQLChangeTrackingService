@@ -1,7 +1,7 @@
 ﻿using Serilog;
 using Serilog.Core;
 
-namespace ServiceTopShelf
+namespace SqlChangeTrackingProducerConsumer
 {
     /// <summary>
     /// Very simple abstract base that sets up the callbacks

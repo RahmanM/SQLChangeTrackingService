@@ -1,6 +1,6 @@
 ﻿using Serilog;
 
-namespace ServiceTopShelf
+namespace SqlChangeTrackingProducerConsumer
 {
     public interface ILoggingConfiguration
     {

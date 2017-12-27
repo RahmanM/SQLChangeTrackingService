@@ -2,12 +2,15 @@
 using Polly;
 using Serilog;
 using Sql.ChangeTracking.Common;
+using Sql.ChangeTracking.Data;
 using System;
+using System.Collections.Concurrent;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ServiceTopShelf
+namespace SqlChangeTrackingProducerConsumer
 {
 
     /// <summary>
@@ -45,6 +48,10 @@ namespace ServiceTopShelf
 
         private async Task PollOnChangedTrackingTables(CancellationToken cancellationToken)
         {
+            // TODO: read it from config
+            const int degreeOfParallelism = 11;
+            var producerConsumer = new ProducerConsumerQueue<UspTableVersionChangeTrackingReturnModel>(WcfService.TableChanged, degreeOfParallelism, logger, cancellationToken);
+
             while (!cancellationToken.IsCancellationRequested)
             {
 
@@ -55,13 +62,12 @@ namespace ServiceTopShelf
                 foreach (var change in versionChanges)
                 {
                     logger.Information("{@change}", change);
-                    WcfService.TableChanged(change.Name);
+                    producerConsumer.Produce(change);
                 }
 
-
-                await Task.Delay(400);
+                await Task.Delay(100);
             }
         }
     }
-   
+
 }

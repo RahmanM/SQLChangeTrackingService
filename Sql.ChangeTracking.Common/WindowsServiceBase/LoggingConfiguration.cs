@@ -2,7 +2,7 @@
 using System.IO;
 using System;
 
-namespace ServiceTopShelf
+namespace SqlChangeTrackingProducerConsumer
 {
 
     /// <summary>

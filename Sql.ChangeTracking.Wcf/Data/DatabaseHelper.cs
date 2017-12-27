@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ServiceTopShelf.DI
+namespace SqlChangeTrackingProducerConsumer.DI
 {
     internal class DatabaseHelper : IDatabaseHelper
     {
@@ -10,7 +10,7 @@ namespace ServiceTopShelf.DI
         {
             using (var context = new SQLChangeTrackingTest("SQLChangeTrackingTest"))
             {
-                return context.UspTableVersionChangeTracking(null);
+                return context.UspTableVersionChangeTracking(1);
             }
         }
     }

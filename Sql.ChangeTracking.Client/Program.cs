@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Sql.ChangeTracking.Client
 {
+    /// <summary>
+    /// Test client that using the change tracking service
+    /// </summary>
     class Program 
     {
         static void Main(string[] args)
@@ -16,24 +19,31 @@ namespace Sql.ChangeTracking.Client
 
             try
             {
-                //Create a binding of the type exposed by service  
+                // Basic A, B of the wcf service
                 BasicHttpBinding binding = new BasicHttpBinding();
+                //EndpointAddress endpointAddress = new EndpointAddress("net.tcp://localhost:9002/Sql.ChangeTracking.Wcf/Wcf/");
+                EndpointAddress endpointAddress = new EndpointAddress("net.tcp://localhost:9002/Sql.ChangeTracking.Wcf/wcf/SqlChangeTrackingWcfService");
 
-                //Create EndPoint address  
-                EndpointAddress endpointAddress = new EndpointAddress("net.tcp://localhost:9002/Sql.ChangeTracking.Wcf/Wcf/");
-
-                //Pass Binding and EndPoint address to ChannelFactory  
+                // Pass Binding and EndPoint address to ChannelFactory, NB: it has to be DuplexChannel as we expect to be called back 
                 channelFactory  =
                   new DuplexChannelFactory<IChangeTrackingSubscriptions>(
                       new InstanceContext(new CallbackCleint()),
                       new NetTcpBinding(),
                       endpointAddress);
 
-                //Now create the new channel as below  
                 IChangeTrackingSubscriptions channel = channelFactory.CreateChannel();
 
-                //Call the service method on this channel as below  
+                // Subscribe as "Client1" and wait for changes to "Customer" table
                 channel.Subscribe("Client1", "Customer");
+                channel.Subscribe("Client1", "Employee");
+
+                Console.WriteLine("To unsubscribe press, 'u'");
+                var input = Console.ReadLine();
+                if (input == "u")
+                {
+                    channel.Unsubscribe("Client1", "Customer");
+                    Console.WriteLine("Unsubscribed!");
+                }
 
             }
             catch (TimeoutException ex)
@@ -67,7 +77,7 @@ namespace Sql.ChangeTracking.Client
                 Console.WriteLine(ex.Message);
             }
 
-            Console.ReadLine();
+            Console.Read();
         }
 
        

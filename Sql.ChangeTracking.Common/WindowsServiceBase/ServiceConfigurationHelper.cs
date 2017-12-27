@@ -1,7 +1,7 @@
 ﻿using Serilog;
 using Topshelf;
 
-namespace ServiceTopShelf
+namespace SqlChangeTrackingProducerConsumer
 {
 
     public class ServiceConfigurationHelper

@@ -3,7 +3,7 @@ using SimpleInjector.Integration.Wcf;
 using Sql.ChangeTracking.Common;
 using Sql.ChangeTracking.Wcf;
 
-namespace ServiceTopShelf.DI
+namespace SqlChangeTrackingProducerConsumer.DI
 {
     public static class ConfigureDependency
     {

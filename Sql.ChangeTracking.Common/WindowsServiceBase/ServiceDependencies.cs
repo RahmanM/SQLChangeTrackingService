@@ -1,6 +1,6 @@
 ﻿using Serilog;
 
-namespace ServiceTopShelf
+namespace SqlChangeTrackingProducerConsumer
 {
     /// <summary>
     /// Things that needs to be passed to base and are needed for configuration

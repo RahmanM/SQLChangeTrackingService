@@ -35,6 +35,6 @@ ALTER TABLE Employee
 ENABLE CHANGE_TRACKING  
 WITH (TRACK_COLUMNS_UPDATED = ON)
 
--- Insert sample data
+-- Insert sample data for testing
 INSERT INTO Customer (Customer.FirstName, Customer.LastName) VALUES('rahman', 'mahmoodi')
 INSERT INTO Employee (Customer.FirstName, Customer.LastName) VALUES('roya', 'mahmoodi')

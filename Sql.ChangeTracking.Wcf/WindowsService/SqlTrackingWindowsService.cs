@@ -1,16 +1,15 @@
 ﻿using Serilog;
-using ServiceTopShelf.DI;
+using SqlChangeTrackingProducerConsumer.DI;
 using SimpleInjector.Integration.Wcf;
 using System;
 using System.Collections.Generic;
 using System.ServiceModel;
-using System.ServiceModel.Description;
 using System.Threading;
 using System.Threading.Tasks;
 using SimpleInjector;
 using Sql.ChangeTracking.Common;
 
-namespace ServiceTopShelf
+namespace SqlChangeTrackingProducerConsumer
 {
     public class SqlTrackingWindowsService : WindowsServiceBase
     {
@@ -70,36 +69,11 @@ namespace ServiceTopShelf
             // Wcf Service Instance
             var wcfService = container.GetInstance<IChangeTrackingSubscriptions>();
             wcfService.Logger = this.Logger;
-            HostWcfService(wcfService);
+            _ServiceHost = WcfServiceHost.GetServiceHost(wcfService);
 
             Logger.Information("OnStart [E]" + DateTime.Now);
         }
-
-        private void HostWcfService(IChangeTrackingSubscriptions service)
-        {
-            if (_ServiceHost != null) _ServiceHost.Close();
-
-            string tcpBaseAddress = "net.tcp://localhost:9002/Sql.ChangeTracking.Wcf/Wcf";
-
-            Uri[] adrbase = { new Uri(tcpBaseAddress) };
-
-            // initialize the WCF service using DI and inject it into hose
-            _ServiceHost = new ServiceHost(service, adrbase);
-            ((ServiceBehaviorAttribute)_ServiceHost.Description.Behaviors[typeof(ServiceBehaviorAttribute)]).InstanceContextMode = InstanceContextMode.Single;
-
-            ServiceMetadataBehavior serviceBehaviour = new ServiceMetadataBehavior();
-            if (!_ServiceHost.Description.Behaviors.Contains(serviceBehaviour))
-                _ServiceHost.Description.Behaviors.Add(serviceBehaviour);
-
-            NetTcpBinding tcpBinding = new NetTcpBinding();
-            _ServiceHost.AddServiceEndpoint(typeof(Sql.ChangeTracking.Common.IChangeTrackingSubscriptions), tcpBinding, tcpBaseAddress);
-            _ServiceHost.AddServiceEndpoint(typeof(IMetadataExchange),
-            MetadataExchangeBindings.CreateMexTcpBinding(), "mex");
-
-            _ServiceHost.Open();
-
-        }
-
+       
         private ServiceHost _ServiceHost = null;
 
         public override void OnStop()
@@ -118,16 +92,4 @@ namespace ServiceTopShelf
         }
     }
 
-    public class WcfServiceFactory : SimpleInjectorServiceHostFactory
-    {
-        protected override ServiceHost CreateServiceHost(Type serviceType, Uri[] baseAddresses)
-        {
-            return new SimpleInjectorServiceHost(
-                ConfigureDependency.container,
-                typeof(Sql.ChangeTracking.Wcf.SqlChangeTrackingWcfService),
-                baseAddresses);
-        }
-
-       
-    }
 }

@@ -1,6 +1,6 @@
 ﻿using Nerdle.AutoConfig;
 
-namespace ServiceTopShelf
+namespace SqlChangeTrackingProducerConsumer
 {
     class Program
     {

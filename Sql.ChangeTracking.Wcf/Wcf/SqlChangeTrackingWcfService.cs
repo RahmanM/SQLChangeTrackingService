@@ -1,5 +1,6 @@
 ﻿using Serilog;
 using Sql.ChangeTracking.Common;
+using Sql.ChangeTracking.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,7 +35,7 @@ namespace Sql.ChangeTracking.Wcf
             }
         }
 
-        public void TableChanged(string tableName)
+        public void TableChanged(UspTableVersionChangeTrackingReturnModel table)
         {
             // get all the subscribers
             try
@@ -48,9 +49,9 @@ namespace Sql.ChangeTracking.Wcf
                     if (((ICommunicationObject)callback).State == CommunicationState.Opened)
                     {
                         //call back only those subscribers who are interested in this fileType
-                        if (string.Equals(item.TableInterested, tableName, StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(item.TableInterested, table.Name, StringComparison.OrdinalIgnoreCase))
                         {
-                            callback.PublishTableChange(tableName);
+                            callback.PublishTableChange(table.Name);
                         }
                     }
                     else
@@ -76,7 +77,7 @@ namespace Sql.ChangeTracking.Wcf
                 lock (locker)
                 {
                     var SubToBeDeleted = from c in Subscribers.Keys
-                                         where c.Id == id
+                                         where c.Id == id && c.TableInterested == tableName
                                          select c;
 
                     if (SubToBeDeleted.Any())

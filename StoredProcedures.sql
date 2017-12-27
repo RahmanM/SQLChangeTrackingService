@@ -1,12 +1,33 @@
 ﻿
+IF EXISTS (
+  SELECT * 
+    FROM INFORMATION_SCHEMA.ROUTINES 
+   WHERE SPECIFIC_SCHEMA = N'dbo'
+     AND SPECIFIC_NAME = N'USP_TableVersionChangeTracking' 
+)
+   DROP PROCEDURE dbo.USP_TableVersionChangeTracking
+GO
+
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
 Create PROCEDURE USP_TableVersionChangeTracking
-	@VersionToStart Int = NULL
+	@VersionToStart Int = NULL -- Set it to null if you want to get chnage trackings as they are produced
 AS
+
+/*
+	This is the main stored procedure that is responsible for tracking the table changes and returning the change tracking information.
+	It track the changes and store the last processed version into LastVersionProcessed table so can track the future changes.
+	Alternatively, we can get specific version changes by supplying the @VersionToStart parameter.
+
+	Usage example:
+
+	 DECLARE @VersionToStart int = null	 -- Set it to null if you want to get chnage trackings as they are produced
+	EXEC USP_TableVersionChangeTracking @VersionToStart
+
+*/
 BEGIN
 				
 	/*
@@ -21,7 +42,7 @@ BEGIN
 
 		DECLARE @LastProcessedVersion BIGINT;
 		SELECT @LastProcessedVersion = [Version] FROM LastVersionProcessed;
-		DECLARE @PreviousVersion BIGINT =  COALESCE(@LastProcessedVersion, @VersionToStart, CHANGE_TRACKING_CURRENT_VERSION ()  );
+		DECLARE @PreviousVersion BIGINT =  COALESCE(@VersionToStart, @LastProcessedVersion, CHANGE_TRACKING_CURRENT_VERSION ()  );
 	
 		BEGIN TRY
 
@@ -133,4 +154,30 @@ BEGIN
 	END Catch
 
 END
+GO
+
+
+IF EXISTS (
+  SELECT * 
+    FROM INFORMATION_SCHEMA.ROUTINES 
+   WHERE SPECIFIC_SCHEMA = N'dbo'
+     AND SPECIFIC_NAME = N'Usp_GetChangeTrackingVersion' 
+)
+   DROP PROCEDURE dbo.Usp_GetChangeTrackingVersion
+GO
+
+CREATE PROC Usp_GetChangeTrackingVersion
+AS
+/*
+	Returns the current change tracking version from the database
+
+	Usage example:
+
+	EXEC Usp_GetChangeTrackingVersion
+
+*/
+BEGIN
+	Select CHANGE_TRACKING_CURRENT_VERSION ()
+END
+	
 GO

@@ -1,9 +1,10 @@
 ﻿using Serilog;
+using Sql.ChangeTracking.Data;
 using System.ServiceModel;
 
 namespace Sql.ChangeTracking.Common
 {
-
+    // NB: It requires session to enable callback, and CallbackContract is important!!
     [ServiceContract(SessionMode = SessionMode.Required, CallbackContract = typeof(IEventNotificationCallback))]
     public interface IChangeTrackingSubscriptions
     {
@@ -14,7 +15,7 @@ namespace Sql.ChangeTracking.Common
         void Unsubscribe(string id, string tableName);
 
         [OperationContract(IsOneWay = true)] 
-        void TableChanged(string tableName);
+        void TableChanged(UspTableVersionChangeTrackingReturnModel table);
 
         ILogger Logger { get; set; }
     }

@@ -1,7 +1,7 @@
 ﻿using Sql.ChangeTracking.Data;
 using System.Collections.Generic;
 
-namespace ServiceTopShelf
+namespace SqlChangeTrackingProducerConsumer
 {
     public interface IDatabaseHelper
     {
