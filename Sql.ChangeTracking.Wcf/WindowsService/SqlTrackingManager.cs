@@ -3,6 +3,7 @@ using Polly;
 using Serilog;
 using Sql.ChangeTracking.Common;
 using Sql.ChangeTracking.Data;
+using SqlChangeTrackingProducerConsumer.DI;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
@@ -48,8 +49,8 @@ namespace SqlChangeTrackingProducerConsumer
 
         private async Task PollOnChangedTrackingTables(CancellationToken cancellationToken)
         {
-            // TODO: read it from config
-            const int degreeOfParallelism = 11;
+            var settings = AutoConfig.Map<ChangeTrackingAppSettings>();
+            int degreeOfParallelism = settings.DegreeOfParallelism;
             var producerConsumer = new ProducerConsumerQueue<UspTableVersionChangeTrackingReturnModel>(WcfService.TableChanged, degreeOfParallelism, logger, cancellationToken);
 
             while (!cancellationToken.IsCancellationRequested)
