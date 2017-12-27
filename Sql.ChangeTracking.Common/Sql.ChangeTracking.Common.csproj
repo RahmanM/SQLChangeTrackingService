@@ -67,6 +67,7 @@
     <Compile Include="WindowsServiceBase\IServiceDependencies.cs" />
     <Compile Include="WindowsServiceBase\LoggingConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ConfigSections\LogginInfo.cs" />
     <Compile Include="WindowsServiceBase\ServiceConfigurationHelper.cs" />
     <Compile Include="WindowsServiceBase\ServiceDependencies.cs" />
     <Compile Include="WindowsServiceBase\WindowsServiceBase.cs" />

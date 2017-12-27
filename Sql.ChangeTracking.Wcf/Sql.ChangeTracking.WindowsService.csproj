@@ -78,11 +78,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config\ConfigureDependency.cs" />
+    <Compile Include="Data\ChangeTrackingAppSettings.cs" />
     <Compile Include="Data\DatabaseHelper.cs" />
     <Compile Include="Data\IDatabaseHelper.cs" />
     <Compile Include="Wcf\SqlChangeTrackingWcfService.cs" />
     <Compile Include="WindowsService\ISqlTrackingManager.cs" />
-    <Compile Include="WindowsService\ProducerConsumerQueue`1.cs" />
+    <Compile Include="WindowsService\ProducerConsumerQueue.cs" />
     <Compile Include="WindowsService\SqlTrackingManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

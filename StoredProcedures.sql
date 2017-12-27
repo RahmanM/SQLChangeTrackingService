@@ -41,7 +41,7 @@ BEGIN
 	BEGIN TRANSACTION
 
 		DECLARE @LastProcessedVersion BIGINT;
-		SELECT @LastProcessedVersion = [Version] FROM LastVersionProcessed;
+		SELECT @LastProcessedVersion = ISNULL([Version],-1) FROM LastVersionProcessed;
 		DECLARE @PreviousVersion BIGINT =  COALESCE(@VersionToStart, @LastProcessedVersion, CHANGE_TRACKING_CURRENT_VERSION ()  );
 	
 		BEGIN TRY
@@ -120,15 +120,18 @@ BEGIN
 				DELETE #TablesWithChangeTracking WHERE Id = @id
 
 			END
+			
+			IF(SELECT COUNT(*) FROM #TableChanges WHERE SysChangeVersion IS NOT NULL)  > 0 AND @VersionToStart IS NULL
+			BEGIN
+				DECLARE @LastVersionProcessed BIGINT = NULL;
+				SELECT @LastVersionProcessed = ISNULL([Version], -1) FROM LastVersionProcessed
 
-			DECLARE @LastVersionProcessed BIGINT = NULL;
-			SELECT @LastVersionProcessed = [VERSION] FROM LastVersionProcessed
-
-			IF(ISNULL(@LastVersionProcessed, -1) < 0)
-				INSERT INTO LastVersionProcessed VALUES(CHANGE_TRACKING_CURRENT_VERSION () -1);
-			ELSE
-				Update LastVersionProcessed SET [Version] = CHANGE_TRACKING_CURRENT_VERSION () 
-
+				IF(@LastVersionProcessed < 0)
+					INSERT INTO LastVersionProcessed VALUES(@LastProcessedVersion);
+				ELSE
+					UPDATE LastVersionProcessed SET [Version] = @LastProcessedVersion + 1;
+			END
+			
 			SELECT * FROM #TableChanges 
 			WHERE SysChangeVersion IS NOT NULL
 
@@ -151,6 +154,7 @@ BEGIN
 		,ERROR_PROCEDURE() AS ErrorProcedure  
 		,ERROR_LINE() AS ErrorLine  
 		,ERROR_MESSAGE() AS ErrorMessage;  
+		
 	END Catch
 
 END

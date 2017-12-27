@@ -39,11 +39,4 @@ namespace SqlChangeTrackingProducerConsumer
         }
     }
 
-    public class LogginInfo
-    {
-        public string LogFile { get; set; }
-        public string LogFolder { get; set; }
-
-    }
-
 }
