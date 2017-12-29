@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using System;
+using Serilog;
 
 namespace SqlChangeTrackingProducerConsumer
 {
@@ -8,5 +9,6 @@ namespace SqlChangeTrackingProducerConsumer
     public class ServiceDependencies : IServiceDependencies
     {
         public ILogger Logger { get; set; }
+        public ServiceInfo ServiceInfo { get; set; }
     }
 }

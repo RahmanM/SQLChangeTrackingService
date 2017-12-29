@@ -19,6 +19,7 @@ namespace SqlChangeTrackingProducerConsumer
 
             // initialize the WCF service using DI and inject it into hose
             _ServiceHost = new ServiceHost(service, adrbase);
+            // NB: important be able to inject service instance above
             ((ServiceBehaviorAttribute)_ServiceHost.Description.Behaviors[typeof(ServiceBehaviorAttribute)]).InstanceContextMode = InstanceContextMode.Single;
 
             ServiceMetadataBehavior serviceBehaviour = new ServiceMetadataBehavior();
@@ -26,7 +27,12 @@ namespace SqlChangeTrackingProducerConsumer
                 _ServiceHost.Description.Behaviors.Add(serviceBehaviour);
 
             NetTcpBinding tcpBinding = new NetTcpBinding();
-            _ServiceHost.AddServiceEndpoint(typeof(Sql.ChangeTracking.Common.IChangeTrackingSubscriptions), tcpBinding, tcpBaseAddress);
+            // NB: important to keep the duplex session open for long, though should be some reasonable number?
+            tcpBinding.OpenTimeout = TimeSpan.MaxValue;
+            tcpBinding.CloseTimeout = TimeSpan.MaxValue;
+            tcpBinding.ReceiveTimeout = TimeSpan.MaxValue;
+
+            _ServiceHost.AddServiceEndpoint(typeof(IChangeTrackingSubscriptions), tcpBinding, tcpBaseAddress);
             _ServiceHost.AddServiceEndpoint(typeof(IMetadataExchange),
             MetadataExchangeBindings.CreateMexTcpBinding(), "mex");
 

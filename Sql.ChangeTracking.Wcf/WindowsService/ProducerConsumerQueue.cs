@@ -25,10 +25,16 @@ namespace SqlChangeTrackingProducerConsumer
             _workers = Enumerable.Range(1, degreeOfParallelism)
                 .Select
                 (
-                    _ => Task.Factory.StartNew(DoWork, TaskCreationOptions.LongRunning)
+                    _ => Task.Run(() => DoWork())
                     .ContinueWith(
-                        (c,b) => 
-                        Logger.Error(c.Exception, c.Exception.Message), 
+                        (c,d) =>
+                        {
+                            foreach (var item in c.Exception.InnerExceptions)
+                            {
+                                Console.WriteLine(item.Message);
+                                Logger.Error(item, item.Message);
+                            }
+                        }, 
                         TaskContinuationOptions.OnlyOnFaulted , 
                         token)
                 ).ToArray();
@@ -38,9 +44,9 @@ namespace SqlChangeTrackingProducerConsumer
 
         public void Produce(T item)
         {
-            Logger.Information("Adding item to the collection.");
+            Console.WriteLine("Adding item to the collection.");
             _blockingCollection.Add(item);
-            Logger.Information("Items in collection: " + _blockingCollection.Count);
+            Console.WriteLine("Items in collection: " + _blockingCollection.Count);
         }
 
         public void CompleteProcessing()

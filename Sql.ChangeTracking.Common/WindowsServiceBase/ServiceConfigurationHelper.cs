@@ -55,15 +55,14 @@ namespace SqlChangeTrackingProducerConsumer
                     Logger.Information("Configuring the base service [End]");
                 });
 
-                x.SetDescription("Topshelf Invoice Service");
-                x.SetDisplayName("Topshelf Invoice Service");
-                x.SetServiceName("TopshelfInvoiceService");
+                x.SetDescription(ServiceDependencies.ServiceInfo.Description);
+                x.SetDisplayName(ServiceDependencies.ServiceInfo.ServiceDisplayName);
+                x.SetServiceName(ServiceDependencies.ServiceInfo.ServiceName);
 
                 x.EnableServiceRecovery(r =>
                 {
                     r.RestartService(0);
-                    r.RunProgram(7, "ping google.com");
-                    r.RestartComputer(5, "message");
+                    r.RestartService(0);
                     r.OnCrashOnly();
                     // number of days until the error count resets
                     r.SetResetPeriod(1);
@@ -85,7 +84,6 @@ namespace SqlChangeTrackingProducerConsumer
                 });
 
                 x.DependsOnEventLog();
-
                 x.RunAsLocalSystem();
                 x.StartAutomatically();
 

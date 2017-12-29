@@ -56,17 +56,17 @@ namespace SqlChangeTrackingProducerConsumer
             while (!cancellationToken.IsCancellationRequested)
             {
 
-                logger.Information("Polling ...");
+                Console.WriteLine($"Polling {DateTime.Now}...");
 
                 var versionChanges = DatabaseHelper.GetData();
 
                 foreach (var change in versionChanges)
                 {
-                    logger.Information("{@change}", change);
+                    Console.WriteLine($"Change: {change.Id} -> {change.Name} - {change.SysChangeOperation} - {change.SysChangeVersion}");
                     producerConsumer.Produce(change);
                 }
 
-                await Task.Delay(100);
+                await Task.Delay(settings.PollingFrequencyMilliSeconds);
             }
         }
     }

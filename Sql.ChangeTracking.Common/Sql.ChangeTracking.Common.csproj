@@ -70,6 +70,7 @@
     <Compile Include="ConfigSections\LogginInfo.cs" />
     <Compile Include="WindowsServiceBase\ServiceConfigurationHelper.cs" />
     <Compile Include="WindowsServiceBase\ServiceDependencies.cs" />
+    <Compile Include="WindowsServiceBase\ServiceInfo.cs" />
     <Compile Include="WindowsServiceBase\WindowsServiceBase.cs" />
   </ItemGroup>
   <ItemGroup>

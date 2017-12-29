@@ -21,7 +21,13 @@ namespace SqlChangeTrackingProducerConsumer
                 new ServiceConfigurationHelper(new SqlTrackingWindowsService(logger), 
                     new ServiceDependencies
                     {
-                         Logger = logger
+                         Logger = logger,
+                         ServiceInfo = new ServiceInfo()
+                         {
+                             Description = "Sql Tracking Service",
+                             ServiceDisplayName = "Sql Tracking Service",
+                             ServiceName = "SqlTrackingService"
+                         }
                     }
                     ).Configure();
             }
