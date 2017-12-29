@@ -63,6 +63,7 @@
     <Compile Include="Interfaces\IChangeTrackingSubscriptions.cs" />
     <Compile Include="Interfaces\IEventNotificationCallback.cs" />
     <Compile Include="Interfaces\Subscriber.cs" />
+    <Compile Include="WcfClient\DuplexChannelFactoryClient.cs" />
     <Compile Include="WindowsServiceBase\ILoggingConfiguration.cs" />
     <Compile Include="WindowsServiceBase\IServiceDependencies.cs" />
     <Compile Include="WindowsServiceBase\LoggingConfiguration.cs" />
