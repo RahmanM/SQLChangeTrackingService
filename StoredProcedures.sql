@@ -42,10 +42,13 @@ BEGIN
 
 		DECLARE @LastProcessedVersion BIGINT;
 		SELECT @LastProcessedVersion = ISNULL([Version],-1) FROM LastVersionProcessed;
-		DECLARE @PreviousVersion BIGINT =  COALESCE(@VersionToStart, @LastProcessedVersion, CHANGE_TRACKING_CURRENT_VERSION ()  );
+		DECLARE @PreviousVersion BIGINT =  COALESCE(@VersionToStart, @LastProcessedVersion, CHANGE_TRACKING_CURRENT_VERSION()  );
 	
 		BEGIN TRY
 
+			/* 
+				Drop the temporary tables if exist at all 
+			*/
 			IF OBJECT_ID(N'tempdb.dbo.#TablesWithChangeTracking', 'U') IS NOT NULL
 			BEGIN
 			  DROP TABLE #TablesWithChangeTracking;
@@ -92,6 +95,9 @@ BEGIN
 				SysChangeVersion int null
 			)
 
+			/*
+				For each table that tracking is enabled, find the changed records and insert into temp table
+			*/
 			While (SELECT COUNT(1) FROM #TablesWithChangeTracking) > 0
 			BEGIN
 
@@ -101,17 +107,14 @@ BEGIN
 				FROM #TablesWithChangeTracking
 
 				SET @sql =
-					N'  DECLARE @ChangeVersion int, @SysChangeOperation varchar(2);
-
-						SELECT TOP 1
-							@ChangeVersion = Sys_change_version,
-							@SysChangeOperation = sys_change_operation
+					N'  
+						INSERT INTO #TableChanges (Name, SysChangeVersion, SysChangeOperation)
+						SELECT 
+							''' + @tablename + ''',
+							Sys_change_version,
+							Sys_change_operation
 						FROM CHANGETABLE
 						(CHANGES ' + @tablename + ',  ' + Cast(@PreviousVersion AS VARCHAR) + ' ) AS CT
-						ORDER by Sys_change_version DESC
-
-						INSERT INTO #TableChanges (name, SysChangeOperation, SysChangeVersion)
-										VALUES	  (''' + @tablename + ''', @SysChangeOperation, @ChangeVersion)
 					'
 
 				EXECUTE (@sql)
@@ -121,15 +124,21 @@ BEGIN
 
 			END
 			
+			/*
+				Update the table to keep track of last processed tracking
+			*/
 			IF(SELECT COUNT(*) FROM #TableChanges WHERE SysChangeVersion IS NOT NULL)  > 0 AND @VersionToStart IS NULL
 			BEGIN
 				DECLARE @LastVersionProcessed BIGINT = NULL;
 				SELECT @LastVersionProcessed = ISNULL([Version], -1) FROM LastVersionProcessed
 
+				Declare @SysChangeVersion BIGINT
+				Select @SysChangeVersion = Max(SysChangeVersion) FROM #TableChanges WHERE SysChangeVersion IS NOT NULL
+
 				IF(@LastVersionProcessed < 0)
-					INSERT INTO LastVersionProcessed VALUES(@LastProcessedVersion);
+					INSERT INTO LastVersionProcessed VALUES(@SysChangeVersion);
 				ELSE
-					UPDATE LastVersionProcessed SET [Version] = @LastProcessedVersion + 1;
+					UPDATE LastVersionProcessed SET [Version] = @SysChangeVersion;
 			END
 			
 			SELECT * FROM #TableChanges 

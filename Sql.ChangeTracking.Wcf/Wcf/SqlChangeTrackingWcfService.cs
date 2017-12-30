@@ -43,25 +43,6 @@ namespace Sql.ChangeTracking.Wcf
                 var subscriberKeys = (from c in Subscribers
                                       select c.Key).ToList();
 
-                //foreach (var item in subscriberKeys)
-                //{
-                //    IEventNotificationCallback callback = Subscribers[item];
-                //    if (((ICommunicationObject)callback).State == CommunicationState.Opened)
-                //    {
-                //        //call back only those subscribers who are interested in this fileType
-                //        if (string.Equals(item.TableInterested, table.Name, StringComparison.OrdinalIgnoreCase))
-                //        {
-                //            callback.PublishTableChange(table.Name);
-                //        }
-                //    }
-                //    //else
-                //    //{
-                //    //    //These subscribers are no longer active. Delete them from subscriber list
-                //    //    subscriberKeys.Remove(item);
-                //    //    Subscribers.Remove(item);
-                //    //}
-                //}
-
                 for (int i = subscriberKeys.Count-1; i >= 0 ; i--)
                 {
                     var KeyValue = subscriberKeys.ElementAt(i);
@@ -78,12 +59,10 @@ namespace Sql.ChangeTracking.Wcf
                     else
                     {
                         //These subscribers are no longer active. Delete them from subscriber list
-                        Console.WriteLine($"{DateTime.Now} -> Removing subscriber: {KeyValue.Id}");
                         subscriberKeys.Remove(KeyValue);
                         Subscribers.Remove(KeyValue);
                     }
                 }
-
             }
             catch (Exception ex)
             {
